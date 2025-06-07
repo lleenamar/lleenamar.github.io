@@ -75,7 +75,7 @@
   <!-- amCharts 5 Library -->
   <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/map.js"></script>
-  <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/geodata/worldHigh.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
 </head>
 <body>
@@ -104,7 +104,7 @@
 
       var polygonSeries = chart.series.push(
         am5map.MapPolygonSeries.new(root, {
-          geoJSON: am5geodata_worldLow,
+          geoJSON: am5geodata_worldHigh,
           exclude: ["AQ"],
         })
       );
