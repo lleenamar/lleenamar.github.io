@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Willkommen</title>
   <style>
     body {
@@ -46,6 +46,7 @@
       text-decoration: none;
       font-weight: bold;
       transition: background-color 0.3s ease, color 0.3s ease;
+      cursor: pointer;
     }
 
     .btn:hover {
@@ -54,8 +55,14 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     #chartdiv {
@@ -75,7 +82,7 @@
   <section class="intro">
     <div class="intro-content">
       <h1>GreenMirror</h1>
-      <p>hier finden Sie eine Übersicht der CO2-Ausgaben der einzelnen Länder.</p>
+      <p>Hier finden Sie eine Übersicht der CO2-Ausgaben der einzelnen Länder.</p>
       <a href="#chartdiv" class="btn">Weltkarte anzeigen</a>
     </div>
   </section>
@@ -84,46 +91,98 @@
   <div id="chartdiv"></div>
 
   <script>
-    am5.ready(function() {
-      // Root Element
+    am5.ready(function () {
       var root = am5.Root.new("chartdiv");
 
-      root.setThemes([
-        am5themes_Animated.new(root)
-      ]);
+      root.setThemes([am5themes_Animated.new(root)]);
 
-      // Erstelle das Chart
       var chart = root.container.children.push(
         am5map.MapChart.new(root, {
           panX: "rotateX",
           panY: "rotateY",
-          projection: am5map.geoMercator()
+          projection: am5map.geoMercator(),
         })
       );
 
-      // Länder-Layer
+      // Beispielhafte CO2-Daten in Megatonnen
+      var co2Data = {
+        DE: 800,
+        US: 5000,
+        CN: 10000,
+        FR: 400,
+        BR: 450,
+        IN: 2500,
+        RU: 1500,
+        CA: 600,
+        AU: 400,
+        ZA: 500,
+        JP: 1200,
+        MX: 600,
+        GB: 350,
+        IT: 320,
+        ES: 300,
+      };
+
+      // Farbskala: grün (wenig CO2) bis rot (viel CO2)
+      function getColor(value) {
+        if (value === undefined) {
+          return am5.color(0xcccccc); // Grau für keine Daten
+        }
+        var ratio = Math.min(value / 10000, 1);
+        var red = Math.floor(255 * ratio);
+        var green = Math.floor(255 * (1 - ratio));
+        return am5.color((red << 16) + (green << 8));
+      }
+
       var polygonSeries = chart.series.push(
         am5map.MapPolygonSeries.new(root, {
           geoJSON: am5geodata_worldLow,
-          exclude: ["AQ"] // Antarktis ausblenden
+          exclude: ["AQ"],
         })
       );
 
-      // Interaktion: Tooltip + Klick
       polygonSeries.mapPolygons.template.setAll({
-        tooltipText: "{name}",
-        interactive: true
-      });
-
-      polygonSeries.mapPolygons.template.events.on("click", function(ev) {
-        const country = ev.target.dataItem.dataContext;
-        alert("Du hast geklickt auf: " + country.name);
+        tooltipText: "{name}\nCO2-Ausstoß: {co2} Mt",
+        interactive: true,
+        fill: am5.color(0xcccccc),
       });
 
       polygonSeries.mapPolygons.template.states.create("hover", {
-        fill: am5.color(0x677935)
+        fill: am5.color(0x677935),
       });
 
+      polygonSeries.mapPolygons.template.events.on("click", function (ev) {
+        var country = ev.target.dataItem.dataContext;
+        alert(
+          "Du hast geklickt auf: " +
+            country.name +
+            "\nCO2-Ausstoß: " +
+            (country.co2 || "Keine Daten")
+        );
+      });
+
+      // Daten mit CO2-Werten erweitern
+      polygonSeries.data.setAll(
+        polygonSeries.dataItems.map(function (dataItem) {
+          var id = dataItem.dataContext.id;
+          var co2 = co2Data[id];
+          return {
+            id: id,
+            co2: co2,
+            fill: getColor(co2),
+          };
+        })
+      );
+
+      // Farbe anpassen anhand der CO2-Werte
+      polygonSeries.mapPolygons.template.adapters.add("fill", function (
+        fill,
+        target
+      ) {
+        var id = target.dataItem.dataContext.id;
+        var co2 = co2Data[id];
+        return getColor(co2);
+      });
     }); // end am5.ready()
   </script>
 </body>
