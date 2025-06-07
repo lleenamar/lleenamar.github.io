@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Willkommen</title>
+
+  <!-- 🌐 amCharts-Bibliotheken -->
+  <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/map.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+
   <style>
     body {
       margin: 0;
@@ -63,68 +70,103 @@
       height: 80vh;
       margin-top: 2rem;
     }
-  </style>
 
-  <!-- amCharts 5 Library -->
-  <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
-  <script src="https://cdn.amcharts.com/lib/5/map.js"></script>
-  <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
-  <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+    #infoPanel {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(255,255,255,0.95);
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      max-width: 300px;
+      display: none;
+      z-index: 10;
+    }
+
+    #infoPanel h3 {
+      margin-top: 0;
+    }
+  </style>
 </head>
 <body>
+
+  <!-- 📍 Intro-Bereich -->
   <section class="intro">
     <div class="intro-content">
       <h1>GreenMirror</h1>
-      <p>Hier finden Sie eine Übersicht über die CO2-Ausgaben der einzelnen Länder.</p>
+      <p>Hier finden Sie eine Übersicht der CO2-Ausgaben der einzelnen Länder auf der Welt.</p>
       <a href="#chartdiv" class="btn">Weltkarte anzeigen</a>
     </div>
   </section>
 
-  <!-- Karte -->
+  <!-- 🌍 Interaktive Weltkarte -->
   <div id="chartdiv"></div>
+  <div id="infoPanel"></div>
 
+  <!-- 🧠 Skript für Weltkarte + CO₂-Daten -->
   <script>
-    am5.ready(function() {
-      // Root Element
-      var root = am5.Root.new("chartdiv");
+    am5.ready(async () => {
+      // 📦 CO₂-Daten laden
+      const emissionsURL = "https://raw.githubusercontent.com/owid/co2-data/master/owid-co2-data.json";
+      const response = await fetch(emissionsURL);
+      const rawData = await response.json();
+      const latestYear = "2022";
 
-      root.setThemes([
-        am5themes_Animated.new(root)
-      ]);
+      const emissionsByCode = {};
+      for (const countryData of Object.values(rawData)) {
+        if (countryData.iso_code && countryData.data) {
+          const latestEntry = countryData.data.find(d => d.year == latestYear);
+          if (latestEntry && latestEntry.co2) {
+            emissionsByCode[countryData.iso_code] = latestEntry.co2;
+          }
+        }
+      }
 
-      // Erstelle das Chart
-      var chart = root.container.children.push(
-        am5map.MapChart.new(root, {
-          panX: "rotateX",
-          panY: "rotateY",
-          projection: am5map.geoMercator()
-        })
-      );
+      // 🌐 amCharts Root
+      const root = am5.Root.new("chartdiv");
+      root.setThemes([am5themes_Animated.new(root)]);
 
-      // Länder-Layer
-      var polygonSeries = chart.series.push(
-        am5map.MapPolygonSeries.new(root, {
-          geoJSON: am5geodata_worldLow,
-          exclude: ["AQ"] // Antarktis ausblenden
-        })
-      );
+      // 🗺️ Map erstellen
+      const chart = root.container.children.push(am5map.MapChart.new(root, {
+        panX: "rotateX",
+        panY: "rotateY",
+        projection: am5map.geoMercator()
+      }));
 
-      // Interaktion: Tooltip + Klick
+      const polygonSeries = chart.series.push(am5map.MapPolygonSeries.new(root, {
+        geoJSON: am5geodata_worldLow,
+        exclude: ["AQ"]
+      }));
+
       polygonSeries.mapPolygons.template.setAll({
         tooltipText: "{name}",
         interactive: true
       });
 
-      polygonSeries.mapPolygons.template.events.on("click", function(ev) {
-        const country = ev.target.dataItem.dataContext;
-        alert("Du hast geklickt auf: " + country.name);
+      // 📌 Klick-Event
+      polygonSeries.mapPolygons.template.events.on("click", ev => {
+        const ctx = ev.target.dataItem.dataContext;
+        const iso = ctx.id;
+        const co2 = emissionsByCode[iso];
+        const panel = document.getElementById("infoPanel");
+        if (co2 != null) {
+          panel.innerHTML = `
+            <h3>${ctx.name} (${iso})</h3>
+            <p><strong>CO₂-Emissionen:</strong><br>
+            ${co2.toLocaleString()} Mio. Tonnen (Stand ${latestYear})</p>`;
+        } else {
+          panel.innerHTML = `<h3>${ctx.name}</h3><p>Keine Daten verfügbar.</p>`;
+        }
+        panel.style.display = "block";
       });
 
+      // 🎨 Hover-State
       polygonSeries.mapPolygons.template.states.create("hover", {
         fill: am5.color(0x677935)
       });
-
-    }); // end am5.ready()
+    });
   </script>
+
 </body>
 </html>
