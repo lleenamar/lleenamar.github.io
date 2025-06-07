@@ -123,26 +123,40 @@
         }
       }
 
-      // 🌐 amCharts Root
-      const root = am5.Root.new("chartdiv");
-      root.setThemes([am5themes_Animated.new(root)]);
+      am5.ready(async () => {
+  // ... CO₂-Daten bleibt gleich ...
 
-      // 🗺️ Map erstellen
-      const chart = root.container.children.push(am5map.MapChart.new(root, {
-        panX: "rotateX",
-        panY: "rotateY",
-        projection: am5map.geoMercator()
-      }));
+  const root = am5.Root.new("chartdiv");
+  root.setThemes([am5themes_Animated.new(root)]);
 
-      const polygonSeries = chart.series.push(am5map.MapPolygonSeries.new(root, {
-        geoJSON: am5geodata_worldLow,
-        exclude: ["AQ"]
-      }));
+  const chart = root.container.children.push(
+    am5maps.MapChart.new(root, {
+      panX: "rotateX",
+      panY: "rotateY",
+      projection: am5maps.geoMercator()
+    })
+  );
 
-      polygonSeries.mapPolygons.template.setAll({
-        tooltipText: "{name}",
-        interactive: true
-      });
+  const polygonSeries = chart.series.push(
+    am5maps.MapPolygonSeries.new(root, {
+      geoJSON: am5geodata_worldLow,
+      exclude: ["AQ"]
+    })
+  );
+
+  polygonSeries.mapPolygons.template.setAll({
+    tooltipText: "{name}",
+    interactive: true
+  });
+
+  polygonSeries.mapPolygons.template.events.on("click", ev => {
+    // ... Info-Panel-Logik bleibt gleich ...
+  });
+
+  polygonSeries.mapPolygons.template.states.create("hover", {
+    fill: am5.color(0x677935)
+  });
+});
 
       // 📌 Klick-Event
       polygonSeries.mapPolygons.template.events.on("click", ev => {
