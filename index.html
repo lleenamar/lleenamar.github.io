@@ -1,7 +1,65 @@
-<section class="intro">
-  <div class="intro-content">
-    <h1>Willkommen auf meiner Webseite</h1>
-    <p>Entdecke spannende Inhalte, kreative Projekte und vieles mehr.</p>
-    <a href="#start" class="btn">Jetzt starten</a>
-  </div>
-</section>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Willkommen</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9f9;
+    }
+
+    .intro {
+      height: 100vh;
+      background: linear-gradient(135deg, #00b4db 0%, #0083b0 50%, #00c9a7 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .intro-content {
+      max-width: 600px;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    .intro h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .intro p {
+      font-size: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .btn {
+      background-color: white;
+      color: #0083b0;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #0083b0;
+      color: white;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <section class="intro">
+    <div class="intro-content">
+      <h1>Willkommen auf m
