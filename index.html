@@ -161,18 +161,17 @@
         );
       });
 
-      // Daten mit CO2-Werten erweitern
-      polygonSeries.data.setAll(
-        polygonSeries.dataItems.map(function (dataItem) {
-          var id = dataItem.dataContext.id;
-          var co2 = co2Data[id];
-          return {
-            id: id,
-            co2: co2,
-            fill: getColor(co2),
-          };
-        })
-      );
+      
+        // Datenobjekte für jedes Land mit CO2-Werten erstellen
+        var data = Object.keys(co2Data).map(function (id) {
+          return {
+            id: id,
+            co2: co2Data[id],
+            fill: getColor(co2Data[id]),
+          };
+        });
+        
+        polygonSeries.data.setAll(data);
 
       // Farbe anpassen anhand der CO2-Werte
       polygonSeries.mapPolygons.template.adapters.add("fill", function (
