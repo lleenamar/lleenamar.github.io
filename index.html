@@ -335,25 +335,39 @@ var co2Data = {
 
       
         // Datenobjekte für jedes Land mit CO2-Werten erstellen
-        var data = Object.keys(co2Data).map(function (id) {
-          return {
-            id: id,
-            co2: co2Data[id],
-            fill: getColor(co2Data[id]),
-          };
-        });
-        
-        polygonSeries.data.setAll(data);
+var data = Object.keys(co2Data).map(function (id) {
+  return {
+    id: id,
+    co2: co2Data[id],
+    fill: getColor(co2Data[id])
+  };
+});
 
-      // Farbe anpassen anhand der CO2-Werte
-      polygonSeries.mapPolygons.template.adapters.add("fill", function (
-        fill,
-        target
-      ) {
-        var id = target.dataItem.dataContext.id;
-        var co2 = co2Data[id];
-        return getColor(co2);
-      });
+polygonSeries.data.setAll(data);
+
+// Tooltip aktualisieren, damit er auf das richtige Feld zugreift
+polygonSeries.mapPolygons.template.setAll({
+  tooltipText: "{name}\nCO2-Ausstoß: {value} Mt",
+  interactive: true
+});
+
+// Adapter für Farbe
+polygonSeries.mapPolygons.template.adapters.add("fill", function (fill, target) {
+  var dataItem = target.dataItem;
+  if (dataItem && dataItem.dataContext && dataItem.dataContext.co2 !== undefined) {
+    return getColor(dataItem.dataContext.co2);
+  }
+  return am5.color(0xcccccc);
+});
+
+// Wertbindung für Tooltip
+polygonSeries.mapPolygons.template.adapters.add("tooltipText", function (text, target) {
+  var dataItem = target.dataItem;
+  if (dataItem && dataItem.dataContext && dataItem.dataContext.co2 !== undefined) {
+    return target.dataItem.dataContext.name + "\nCO2-Ausstoß: " + dataItem.dataContext.co2 + " Mt";
+  }
+  return target.dataItem.dataContext.name + "\nCO2-Ausstoß: Keine Daten";
+});
     }); // end am5.ready()
   </script>
 </body>
